@@ -1,32 +1,49 @@
-#[derive(Debug, Clone, serde::Serialize)]
+use serde::Serialize;
+
+#[derive(Debug, Clone, Serialize)]
 pub struct WebhookField {
-    name: String,
-    value: String,
-    inline: bool,
+    pub name: String,
+    pub value: String,
+    pub inline: bool,
 }
 
-#[derive(Debug, Clone, serde::Serialize)]
-pub struct Webhook {
-    pub name: String,
+#[derive(Debug, Clone, Serialize)]
+pub struct EmbedFooter {
+    pub text: String,
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct EmbedThumbnail {
     pub url: String,
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct Embed {
     pub title: String,
-    pub content: String,
-    pub footer: String,
-    pub thumbnail: String,
-    pub avatar: String,
+    pub description: String,
+    pub footer: EmbedFooter,
+    pub thumbnail: EmbedThumbnail,
     pub fields: Vec<WebhookField>,
 }
 
-pub async fn send(webhook: &Webhook) -> Result<(), Box<dyn std::error::Error>> {
-    let client = reqwest::Client::new();
-    let payload = serde_json::to_string(webhook)?;
+#[derive(Debug, Clone, Serialize)]
+pub struct WebhookPayload {
+    pub username: String,
+    pub avatar_url: String,
+    pub content: String,
+    pub embeds: Vec<Embed>,
+}
 
-    let response = client
-        .post(&webhook.url)
-        .header("Content-Type", "application/json")
-        .body(payload)
-        .send()
-        .await?;
+pub async fn send(
+    webhook_url: &str,
+    payload: &WebhookPayload,
+) -> Result<(), Box<dyn std::error::Error>> {
+    let client = reqwest::Client::new();
+
+    let response = client.post(webhook_url).json(payload).send().await?;
+
+    println!("status: {}", response.status());
+    println!("body: {}", response.text().await?);
 
     Ok(())
 }
