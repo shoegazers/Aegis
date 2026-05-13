@@ -1,5 +1,6 @@
 pub mod antivm;
 pub mod btc;
+pub mod discord;
 pub mod fake_error;
 pub mod filepump;
 pub mod grab;
