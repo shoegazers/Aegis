@@ -20,7 +20,7 @@ Grabber made in Rust. Educational purposes only. I do not condone the use of thi
 - Trolling functions reminiscent of old generation viruses
 ## Usage/Examples
 
-Run `git clone https://github.com/shoegazers/Aegis`, then ```cargo run```
+Run `git clone https://github.com/shoegazers/Aegis`, then ```cd Aegis``` and ```cargo run -p gui``` to open the GUI. Compile time takes a while for the very first build.
 Make sure you have the Rust language installed.
 ## Contributing
 
@@ -41,4 +41,3 @@ Contributions are always welcome!
 ## License
 
 [MIT](https://choosealicense.com/licenses/mit/)
-
