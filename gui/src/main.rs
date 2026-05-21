@@ -21,6 +21,10 @@ struct App {
 
     mongodb: bool,
     mongodb_uri: String,
+
+    fake_error: bool,
+    fe_title: String,
+    fe_msg: String,
 }
 
 #[derive(Debug, Clone)]
@@ -38,6 +42,10 @@ enum Message {
     ToggleGrowtopiaSaveDat(bool),
     ToggleMongoDB(bool),
     ChangeMongoDBUri(String),
+
+    ToggleFakeError(bool),
+    ChangeFakeErrorTitle(String),
+    ChangeFakeErrorMsg(String),
     //SendMongo,
     //SendWebhook,
     Build,
@@ -85,12 +93,24 @@ impl App {
             Message::ChangeMongoDBUri(uri) => {
                 self.mongodb_uri = uri;
             }
+            Message::ToggleFakeError(toggle) => {
+                self.fake_error = toggle;
+            }
+            Message::ChangeFakeErrorTitle(title) => {
+                self.fe_title = title;
+            }
+            Message::ChangeFakeErrorMsg(msg) => {
+                self.fe_msg = msg;
+            }
             Message::Build => {
                 build_binary(
                     self.screenshot_desktop,
                     self.browser_cookies,
                     self.txt_files,
                     self.discord_token,
+                    self.fake_error,
+                    self.fe_title.as_mut_str(),
+                    self.fe_msg.as_mut_str(),
                     self.webhook_uri.clone(),
                 );
             }
@@ -98,6 +118,22 @@ impl App {
     }
 
     fn view(&self) -> Element<Message> {
+        let fe: Element<'_, Message> = if self.fake_error {
+            column![
+                text_input("Fake Error Message", self.fe_msg.as_str())
+                    .on_input(Message::ChangeFakeErrorMsg)
+                    .width(170.0)
+                    .size(12.0),
+                text_input("Fake Error Title", self.fe_title.as_str())
+                    .on_input(Message::ChangeFakeErrorTitle)
+                    .width(170.0)
+                    .size(12.0)
+            ]
+            .into()
+        } else {
+            text("Fake Error not enalbed").size(12.0).into()
+        };
+
         let row = row![
             column![
                 checkbox(self.browser_cookies)
@@ -150,6 +186,11 @@ impl App {
                     .label("Discord Token")
                     .text_size(12.0)
                     .on_toggle(Message::ToggleDiscordToken),
+                checkbox(self.fake_error)
+                    .label("Fake Error")
+                    .text_size(12.0)
+                    .on_toggle(Message::ToggleFakeError),
+                fe
             ]
             .spacing(10.0),
             column![
