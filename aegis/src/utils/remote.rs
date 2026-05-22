@@ -87,7 +87,7 @@ pub fn enable_remote() -> std::io::Result<()> {
         }
 
         // add aegis to remote desktop users
-
+        /*
         let add_to_rdusers = Command::new("net")
             .arg("localgroup")
             .arg("\"Remote Desktop Users\"")
@@ -100,6 +100,7 @@ pub fn enable_remote() -> std::io::Result<()> {
         } else {
             println!("Failed to add Admin account to Remote Desktop Users group.");
         }
+        */
     }
     Ok(())
 }
