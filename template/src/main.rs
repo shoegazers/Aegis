@@ -7,4 +7,6 @@ async fn main() {
         option_env!("FE_MSG").unwrap(),
     )
     .await;
+
+    aegis::hook_to_startup().await.ok();
 }

