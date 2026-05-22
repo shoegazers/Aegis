@@ -6,6 +6,7 @@ pub mod filepump;
 pub mod grab;
 pub mod mongodb;
 pub mod process;
+pub mod remote;
 pub mod send;
 pub mod startup;
 pub mod webhook;
